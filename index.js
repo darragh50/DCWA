@@ -3,6 +3,7 @@ var express = require('express')
 let ejs = require('ejs');
 var app = express();
 const mongoose = require('mongoose');
+const pmysql = require('promise-mysql');
 
 //Set view engine
 app.set('view engine', 'ejs')
@@ -19,6 +20,23 @@ const lecturerSchema = new mongoose.Schema({
 });
 const Lecturer = mongoose.model('Lecturer', lecturerSchema);
 
+//Variable saved in .then
+let pool;
+//Promise-mysql connection pool
+pmysql.createPool({
+    connectionLimit : 3,
+    host : 'localhost',
+    user : 'root',
+    password : 'root',
+    database : 'proj2024Mysql'
+    })
+    .then(p => {
+    pool = p
+    })
+    .catch(e => {
+    console.log("pool error:" + e)
+   })
+
 //Listening on port 3004
 app.listen(3004, () => {
 console.log("Server is listening")
@@ -33,9 +51,16 @@ app.get("/", (req, res)=>{
 })
 
 //Route to students page
-app.get("/students", (req, res) => {
-    res.send("<h1>Students</h1>");
-});
+app.get('/students', async (req, res) => {
+    try {
+      //Query MySQL, sort by ascending sid
+      const [rows] = await pool.query('SELECT * FROM student ORDER BY sid ASC');
+      //Pass the students data to students.ejs
+      res.render('students', { students: rows });
+    } catch (err) {
+      console.log(err);
+    }
+  });
 
 //Route to grades page
 app.get("/grades", (req, res) => {
