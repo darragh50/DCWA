@@ -19,7 +19,17 @@ console.log("Server is listening")
 //Debugging
 console.log("HERE")
 
-//.get default root
+//Default root to home page
 app.get("/", (req, res)=>{
-    res.send("<h1>Test</h1>")
+    res.render("home")
 })
+
+//Route to students page
+app.get("/students", (req, res) => {
+    res.send("<h1>Students</h1>");
+});
+
+//Route to grades page
+app.get("/grades", (req, res) => {
+    res.send("<h1>Grades</h1>");
+});
