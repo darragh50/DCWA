@@ -53,12 +53,13 @@ app.get("/", (req, res)=>{
 //Route to students page
 app.get('/students', async (req, res) => {
     try {
-      //Query MySQL, sort by ascending sid
-      const [rows] = await pool.query('SELECT * FROM student ORDER BY sid ASC');
-      //Pass the students data to students.ejs
+      //Query mysql and sort ascending sid
+      const rows = await pool.query('SELECT * FROM student ORDER BY sid ASC');
+  
+      //Send data to students.ejs
       res.render('students', { students: rows });
     } catch (err) {
-      console.log(err);
+      console.log('Error:', err);
     }
   });
 

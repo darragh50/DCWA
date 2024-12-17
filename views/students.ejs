@@ -1,3 +1,26 @@
-<%/*Test by sending row to ensure data is being sent, in pretty-print too*/%>
-<h1>Student Data</h1>
-<pre><%= JSON.stringify(students, null, 2) %></pre>
+<h1>Students</h1>
+<!--Links-->
+<a href="/addStudents">Add Student</a>
+<br>
+<a href="/">Home</a>
+
+<!--Table design -->
+<table border="1" cellspacing="2" cellpadding="5">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Age</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% students.forEach(function(student) { %>
+      <tr>
+        <td><%= student.sid %></td>
+        <td><%= student.name %></td>
+        <td><%= student.age %></td>
+      </tr>
+    <% }); %>
+  </tbody>
+</table>
