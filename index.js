@@ -4,6 +4,8 @@ let ejs = require('ejs');
 var app = express();
 const mongoose = require('mongoose');
 const pmysql = require('promise-mysql');
+//To parse data from forms
+app.use(express.urlencoded({ extended: true }));
 
 //Set view engine
 app.set('view engine', 'ejs')
@@ -79,3 +81,49 @@ app.get("/lecturers", async (req, res) => {
         console.error("Error finding lecturers:", error);
     }
 });
+
+//Route to addStudent page - GET request is sent to /students/add
+app.get('/students/add', (req, res) => {
+    res.render('addStudent', { errorMessages: [], formData: {} });
+  });
+  
+//Route to handle form submission
+app.post('/students/add', async (req, res) => {
+    const { sid, name, age } = req.body;
+    const errorMessages = [];
+    const formData = { sid, name, age };
+    
+    //If loops to check entered data
+    if (!sid || sid.length !== 4) {
+      errorMessages.push("Student ID should be 4 characters");
+    }
+    if (!name || name.length < 2) {
+      errorMessages.push("Student Name should be at least 2 chaarcters");
+    }
+    if (!age || isNaN(age) || parseInt(age) < 18) {
+      errorMessages.push("Age should be 18 or older");
+    }
+  
+    if (errorMessages.length > 0) {
+      //Re-render the form 
+      return res.render('addStudent', { errorMessages, formData });
+    }
+  
+    try {
+      //Making sure student ID is unique
+      const existing = await pool.query('SELECT * FROM student WHERE sid = ?', [sid]);
+
+      if (existing.length > 0) {
+        errorMessages.push("Student ID already in use. Must be unique.");
+        return res.render('addStudent', { errorMessages, formData });
+      }
+  
+      //Insert student into the mysql database
+      await pool.query('INSERT INTO student (sid, name, age) VALUES (?, ?, ?)', [sid, name, age]);
+  
+      //Redirect back to students
+      res.redirect('/students');
+    } catch (err) {
+      console.error(err);
+    }
+  });
