@@ -1,4 +1,4 @@
-<h1>Students</h1>
+<h1>Lecturers</h1>
 <!--Links-->
 <a href="/">Home</a>
 
@@ -13,11 +13,11 @@
     </tr>
   </thead>
   <tbody>
-    <% students.forEach(function(student) { %>
+    <% lecturers.forEach(function(lecturer) { %>
       <tr>
-        <td><%= student.sid %></td>
-        <td><%= student.name %></td>
-        <td><%= student.did %></td>
+        <td><%= lecturer._id %></td>
+        <td><%= lecturer.name %></td>
+        <td><%= lecturer.did %></td>
       </tr>
     <% }); %>
   </tbody>
