@@ -68,9 +68,27 @@ app.get("/grades", (req, res) => {
 
 //Route to lecturers page (MongoDB)
 app.get("/lecturers", async (req, res) => {
-    //Variable that holds all lecturers in proj2024MongoDB database
-    const lecturers = await Lecturer.find(); 
+    //Query the MonogDB data and sort by ascending id
+    const lecturers = await Lecturer.find({}).sort({ _id: 1, lid: 1 });
+
     res.render("lecturers", { lecturers });
+});
+
+//Route to delete lecturer (MongoDB)
+app.get('/lecturers/delete/:lid', async (req, res) => {
+    const lid = req.params.lid;
+    //Find lecturer 
+    const lecturer = await Lecturer.findById(lid);
+
+    //If statement to determine if you can delete
+    if (lecturer.did) {
+      return res.render('deleteLecturer', { lid });
+    }
+
+    //Delete lecturer if they have no modules
+    await Lecturer.deleteOne({ _id: lid });
+    //Redirect
+    res.redirect('/lecturers');  
 });
 
 //Route to addStudent page - GET request is sent to /students/add
