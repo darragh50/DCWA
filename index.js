@@ -54,15 +54,11 @@ app.get("/", (req, res)=>{
 
 //Route to students page
 app.get('/students', async (req, res) => {
-    try {
-      //Query mysql and sort ascending sid
-      const rows = await pool.query('SELECT * FROM student ORDER BY sid ASC');
+    //Query mysql and sort ascending sid
+    const rows = await pool.query('SELECT * FROM student ORDER BY sid ASC');
   
-      //Send data to students.ejs
-      res.render('students', { students: rows });
-    } catch (err) {
-      console.log('Error:', err);
-    }
+    //Send data to students.ejs
+    res.render('students', { students: rows });
   });
 
 //Route to grades page
@@ -72,14 +68,9 @@ app.get("/grades", (req, res) => {
 
 //Route to lecturers page (MongoDB)
 app.get("/lecturers", async (req, res) => {
-    try {
-        //Variable that holds all lecturers in proj2024MongoDB database
-        const lecturers = await Lecturer.find(); 
-        res.render("lecturers", { lecturers });
-    } 
-    catch (error) {
-        console.error("Error finding lecturers:", error);
-    }
+    //Variable that holds all lecturers in proj2024MongoDB database
+    const lecturers = await Lecturer.find(); 
+    res.render("lecturers", { lecturers });
 });
 
 //Route to addStudent page - GET request is sent to /students/add
@@ -109,21 +100,64 @@ app.post('/students/add', async (req, res) => {
       return res.render('addStudent', { errorMessages, formData });
     }
   
-    try {
-      //Making sure student ID is unique
-      const existing = await pool.query('SELECT * FROM student WHERE sid = ?', [sid]);
+    //Making sure student ID is unique
+    const existing = await pool.query('SELECT * FROM student WHERE sid = ?', [sid]);
 
-      if (existing.length > 0) {
-        errorMessages.push("Student ID already in use. Must be unique.");
-        return res.render('addStudent', { errorMessages, formData });
-      }
-  
-      //Insert student into the mysql database
-      await pool.query('INSERT INTO student (sid, name, age) VALUES (?, ?, ?)', [sid, name, age]);
-  
-      //Redirect back to students
-      res.redirect('/students');
-    } catch (err) {
-      console.error(err);
+    if (existing.length > 0) {
+      errorMessages.push("Student ID already in use. Must be unique.");
+      return res.render('addStudent', { errorMessages, formData });
     }
-  });
+  
+    //Insert student into the mysql database
+    await pool.query('INSERT INTO student (sid, name, age) VALUES (?, ?, ?)', [sid, name, age]);
+  
+    //Redirect back to students
+    res.redirect('/students');
+});
+
+//Route to editStudent page - GET request is sent to /students/edit/:sid
+app.get('/students/edit/:sid', async (req, res) => {
+    const sid = req.params.sid;
+    //Query mysqql
+    const student = await pool.query('SELECT * FROM student WHERE sid = ?', [sid]);
+
+    if (student.length > 0) {
+      res.render('editStudent', { 
+        student: student[0], 
+        errorMessages: [], 
+      });
+    } else {
+      console.log('Error:', err);
+    }
+});
+
+//post method to handles information from button click
+app.post('/students/edit/:sid', async (req, res) => {
+    const sid = req.params.sid;
+    const { name, age } = req.body;
+    const errorMessages = [];
+
+    //If statements to make sure details entered match criteria - send error message if they do not
+    if (!name || name.length < 2) {
+      errorMessages.push('Student Name should be at least 2 characters');
+    }
+    if (!age || isNaN(age) || age < 18) {
+     errorMessages.push('Student Age should be at least 18');
+    }
+
+    if (errorMessages.length > 0) {
+     //Return the user with the appropriate error messages, and previous data entered.
+      return res.render('editStudent', { 
+        student: { sid, name, age }, 
+       errorMessages 
+      });
+    }
+
+    //Update student in mysql database
+    await pool.query(
+      'UPDATE student SET name = ?, age = ? WHERE sid = ?',[name, age, sid]
+    );
+
+    //Redirect back to students
+    res.redirect('/students');
+});
