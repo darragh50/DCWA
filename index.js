@@ -62,8 +62,48 @@ app.get('/students', async (req, res) => {
   });
 
 //Route to grades page
-app.get("/grades", (req, res) => {
-    res.send("<h1>Grades</h1>");
+app.get("/grades", async (req, res) => {
+    //Query mysql - accessing data from all 3 tables
+    const query = `
+      select 
+        student.name as studentName,
+        module.name as moduleName,
+        grade.grade as grade
+      from 
+        student
+      left join 
+        grade on student.sid = grade.sid
+      left join 
+        module on grade.mid = module.mid
+      order by 
+        student.name ASC, grade.grade ASC;`;
+    //Call query
+    const rows = await pool.query(query);
+
+    //Initialise data
+    const students = [];
+    const studentMap = {};
+
+    //If statement to check if the student is already in the map
+    rows.forEach(row => {
+      if (!studentMap[row.studentName]) {
+        studentMap[row.studentName] = {
+          studentName: row.studentName,
+          grades: []
+        };
+        students.push(studentMap[row.studentName]);
+      }
+
+      //If statement to check if the row contains a module and to add the grade to the array
+      if (row.moduleName) {
+        studentMap[row.studentName].grades.push({
+          moduleName: row.moduleName,
+          grade: row.grade
+        });
+      }
+    });
+
+    res.render('grades', { students });
 });
 
 //Route to lecturers page (MongoDB)
@@ -102,7 +142,7 @@ app.post('/students/add', async (req, res) => {
     const errorMessages = [];
     const formData = { sid, name, age };
     
-    //If loops to check entered data
+    //If loops to check entered data. Make sure it is of length/not a number etc
     if (!sid || sid.length !== 4) {
       errorMessages.push("Student ID should be 4 characters");
     }

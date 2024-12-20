@@ -1,7 +1,35 @@
-<head>
-    <h1>Grades</h1>
-</head>
-<body>
+<h1>Grades</h1>
+<!--Links-->
+<a href="/">Home</a>
 
-</body>
-</html>
+<!--Table design-->
+<table border="1" cellspacing="2" cellpadding="5">
+  <thead>
+    <tr>
+      <th>Student</th>
+      <th>Module</th>
+      <th>Grade</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!--Loops through the students array. Processes  data and adds rows to the table-->
+    <% students.forEach(function(student) { %>
+      <!--Checks if the grades array for the current student is empty-->
+      <% if (student.grades.length > 0) { %>
+        <!--Loops through and creates a table row with data-->
+        <% student.grades.forEach(function(grade) { %>
+          <tr>
+            <td><%= student.studentName %></td>
+            <td><%= grade.moduleName %></td>
+            <td><%= grade.grade %></td>
+          </tr>
+        <% }); %>
+      <% } else { %>
+        <tr>
+          <td><%= student.studentName %></td>
+          <td colspan="2"></td>
+        </tr>
+      <% } %>
+    <% }); %>
+  </tbody>
+</table>
